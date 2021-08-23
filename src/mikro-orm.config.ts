@@ -1,11 +1,12 @@
 //for migration cli
 import { PROD } from "./constants";
 import { Post } from "./entities/Post";
+import { User } from "./entities/User";
 import { MikroORM } from "@mikro-orm/core";
 import path from "path";
 
 export default {
-  entities: [Post],
+  entities: [Post, User],
   dbName: "lireddit",
   user: "postgres",
   password: "bugovnkl",
