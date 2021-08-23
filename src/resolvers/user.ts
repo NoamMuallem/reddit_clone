@@ -51,7 +51,7 @@ export class UserResolver {
       //, () => UsernamePasswordInput
     )
     options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     if (options.username.length <= 2) {
       return {
@@ -97,6 +97,9 @@ export class UserResolver {
         };
       }
     }
+
+    //authenticate after log in
+    req.session!.userId = user.id;
     return { user };
   }
 
@@ -108,7 +111,7 @@ export class UserResolver {
       //, () => UsernamePasswordInput
     )
     options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     //check the database for a user with that username
     const user = await em.findOne(User, { username: options.username });
@@ -134,9 +137,20 @@ export class UserResolver {
         ],
       };
     }
-
+    //handaling session coockies - store the userId in the session coockie
+    req.session!.userId = user.id;
     return {
       user,
     };
+  }
+
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { em, req }: MyContext) {
+    //you are not logged in
+    if (!req.session!.userId) {
+      return null;
+    }
+    const user = await em.findOne(User, { id: req.session!.userId });
+    return user;
   }
 }
