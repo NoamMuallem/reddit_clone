@@ -10,7 +10,7 @@ import redis from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import { PROD } from "./constants";
-import { MyContext } from "./types";
+import cors from "cors";
 
 const main = async () => {
   //!!!!! redis middleware must come before the apollo middleware so it will run before
@@ -26,6 +26,12 @@ const main = async () => {
   let redisClient = redis.createClient();
 
   const app = express();
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
 
   //redis - session middleware
   app.use(
@@ -56,9 +62,9 @@ const main = async () => {
       validate: false,
     }),
     //pass req and res to gain access to req in resolvers and use coockies
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res }), //spatiel variable that all the resolver have access to
+    context: ({ req, res }) => ({ em: orm.em, req, res }), //spatiel variable that all the resolver have access to
   });
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app, cors: false });
 
   app.listen(4000, () => {
     console.log("server is up on localhost:4000");
